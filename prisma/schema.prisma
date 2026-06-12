@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model University {
+  id                String   @id @default(cuid())
+  name              String
+  city              String
+  province          String
+  type              String   // "University" or "CAS Institute"
+  department        String
+  researchGroup     String?
+  url               String
+  fields            String   // comma-separated physics fields
+  deadline          String   // application deadline
+  englishProgram    Boolean  @default(false)
+  hskRequired       Boolean  @default(false)
+  hskLevel          String?  // e.g., "HSK 4", "HSK 5"
+  cscDesignated     Boolean  @default(false)
+  scholarshipTypes  String   // comma-separated: "CSC", "University Scholarship", "Provincial"
+  requiredDocuments String   // comma-separated
+  notableProfessors String   // comma-separated with |
+  watchlisted       Boolean  @default(false)
+  notesForNepali    String?  // notes for Nepali students
+  lastUpdated       DateTime @default(now())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  watchlistItems    WatchlistItem[]
+}
+
+model WatchlistItem {
+  id          String   @id @default(cuid())
+  universityId String
+  fieldName   String?
+  addedAt     DateTime @default(now())
+  university  University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+}
+
+model CSCInfo {
+  id          String   @id @default(cuid())
+  title       String
+  category    String   // "Type A", "Type B", "Provincial", "University", "Documents", "Timeline", "Embassy"
+  content     String   // JSON string with details
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+}
+
+model SyncLog {
+  id          String   @id @default(cuid())
+  source      String   // "csc", "cucas", "campuschina", "cas", "manual"
+  status      String   // "success", "partial", "failed"
+  recordsSynced Int    @default(0)
+  changes     String?  // JSON string of changes
+  syncedAt    DateTime @default(now())
+}
+
+model AgentConversation {
+  id          String   @id @default(cuid())
+  sessionId   String
+  role        String   // "user" or "assistant"
+  content     String
+  createdAt   DateTime @default(now())
+}
