@@ -74,3 +74,9 @@ server.log
 
 # Caddy
 Caddyfile
+
+# Tool results
+tool-results/
+
+# Worklog
+worklog.md
