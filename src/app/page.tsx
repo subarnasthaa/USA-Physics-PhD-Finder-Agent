@@ -4,8 +4,8 @@ import { useState } from 'react'
 import Header from '@/components/header'
 import DashboardTab from '@/components/dashboard-tab'
 import UniversitiesTab from '@/components/universities-tab'
-import CASInstitutesTab from '@/components/cas-institutes-tab'
-import CSCGuideTab from '@/components/csc-guide-tab'
+import NationalLabsTab from '@/components/national-labs-tab'
+import FundingGuideTab from '@/components/funding-guide-tab'
 import WatchlistTab from '@/components/watchlist-tab'
 import AlertsTab from '@/components/alerts-tab'
 import AgentChatTab from '@/components/agent-chat-tab'
@@ -21,10 +21,10 @@ export default function Home() {
         return <DashboardTab onNavigate={setActiveTab} watchlistedIdsParam={watchlistedIdsParam} />
       case 'universities':
         return <UniversitiesTab watchlistedIdsParam={watchlistedIdsParam} toggleWatchlist={toggleWatchlist} isWatchlisted={isWatchlisted} />
-      case 'cas':
-        return <CASInstitutesTab onNavigate={setActiveTab} watchlistedIdsParam={watchlistedIdsParam} />
-      case 'csc-guide':
-        return <CSCGuideTab />
+      case 'national-labs':
+        return <NationalLabsTab onNavigate={setActiveTab} watchlistedIdsParam={watchlistedIdsParam} />
+      case 'funding-guide':
+        return <FundingGuideTab />
       case 'watchlist':
         return <WatchlistTab watchlistedIds={watchlistedIds} toggleWatchlist={toggleWatchlist} onNavigate={setActiveTab} watchlistedIdsParam={watchlistedIdsParam} />
       case 'alerts':
@@ -45,7 +45,7 @@ export default function Home() {
       <footer className="mt-auto border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 py-4 text-center">
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            © 2026 China Physics PhD Finder | Built for Nepali Students | Data updated regularly
+            © 2025 USA Physics PhD Finder | Built for Nepali Students | Data updated regularly
           </p>
         </div>
       </footer>

@@ -1,29 +1,29 @@
 import { NextResponse } from 'next/server'
 import { universities } from '@/lib/static-data'
-import ZAI from 'z-ai-web-dev-sdk'
 
-const SYSTEM_PROMPT = `You are the China Physics PhD Finder Agent, specialized in helping Nepali MSc Physics students from Tribhuvan University find and apply to Physics PhD programs in China. You have extensive knowledge of:
+const SYSTEM_PROMPT = `You are the USA Physics PhD Finder Agent, specialized in helping Nepali MSc Physics students from Tribhuvan University find and apply to Physics PhD programs in the United States. You have extensive knowledge of:
 
-1. All Chinese universities offering Physics PhD programs (30+ universities)
-2. All CAS (Chinese Academy of Sciences) institutes with physics research (14+ institutes)
-3. CSC Scholarship types (Type A and Type B) for Nepali students
-4. Provincial and university-specific scholarships
-5. Application deadlines and requirements
-6. HSK language requirements
-7. Document checklists
-8. The Chinese Embassy in Nepal (Baluwatar, Kathmandu) process
-9. Research fields: Condensed Matter, Particle Physics, Astrophysics, Optics, Plasma Physics, Nuclear Physics, Quantum Information, Theoretical Physics, Acoustics, Atomic & Molecular Physics
+1. All US universities offering Physics PhD programs (60+ universities)
+2. All US National Laboratories with physics research (12+ labs)
+3. NSF, Fulbright, and university-specific fellowships and funding
+4. GRE/TOEFL/IELTS requirements and waivers (many schools post-COVID)
+5. RA/TA positions and funding packages ($25,000-$45,000/year)
+6. Application deadlines and requirements (mostly Dec-Jan for Fall admission)
+7. F-1 and J-1 visa processes for Nepali students
+8. Research fields: Astrophysics, Condensed Matter, Quantum Mechanics, Particle Physics, Biophysics, AMO Physics, Geophysics, Optics, Nuclear Physics, Computational Physics
 
 Help students by:
-- Recommending universities based on their research interests
-- Explaining the CSC scholarship application process
-- Clarifying Type A vs Type B differences
-- Providing deadline information
-- Suggesting required documents
+- Recommending universities based on their research interests and profile
+- Explaining the US PhD application process and timeline
+- Clarifying GRE requirements and waivers (many schools are GRE-optional post-COVID)
+- Providing funding and stipend information for different locations
+- Suggesting required documents and application strategies
 - Offering tips specific to Nepali applicants
-- Explaining the CUCAS and campuschina.org portals
+- Explaining visa options (F-1, J-1) and requirements
+- Comparing universities and research programs
+- Advising on contacting professors before applying
 
-Always be encouraging, detailed, and specific. When possible, mention actual professors and research groups. Provide URLs when available.`
+Always be encouraging, detailed, and specific. When possible, mention actual professors and research groups. Provide URLs when available. Be realistic about admission chances and funding.`
 
 export async function POST(request: Request) {
   try {
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       )
     }
 
-    // Build messages array - z-ai-web-dev-sdk uses 'assistant' role for system prompts
+    // Build messages array
     const messages: Array<{ role: 'assistant' | 'user'; content: string }> = [
       { role: 'assistant', content: SYSTEM_PROMPT },
     ]
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 
       if (watchlisted.length > 0) {
         const watchlistContext = watchlisted
-          .map((u) => `${u.name} (${u.city}) - Fields: ${u.fields} - Deadline: ${u.deadline} - CSC: ${u.cscDesignated ? 'Yes' : 'No'} - English: ${u.englishProgram ? 'Yes' : 'No'}`)
+          .map((u) => `${u.name} (${u.city}, ${u.state}) - Fields: ${u.fields} - Deadline: ${u.deadline} - Funding: ${u.fundingType} - GRE: ${u.greRequired} - Stipend: $${u.annualStipend?.toLocaleString() || 'N/A'}/yr`)
           .join('\n')
         messages.push({
           role: 'assistant',
@@ -73,6 +73,7 @@ export async function POST(request: Request) {
     messages.push({ role: 'user', content: message })
 
     // Call AI using z-ai-web-dev-sdk
+    const ZAI = (await import('z-ai-web-dev-sdk')).default
     const zai = await ZAI.create()
     const completion = await zai.chat.completions.create({
       messages,

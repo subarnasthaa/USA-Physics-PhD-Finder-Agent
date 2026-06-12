@@ -14,19 +14,19 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "China Physics PhD Finder - For Nepali Students",
-  description: "Comprehensive guide for Nepali MSc Physics students from Tribhuvan University to find PhD programs in China. Explore universities, CAS institutes, CSC scholarships, and get AI-powered assistance.",
-  keywords: ["China", "PhD", "Physics", "CSC Scholarship", "Nepal", "Tribhuvan University", "CAS", "Chinese universities", "study in China"],
-  authors: [{ name: "China Physics PhD Finder" }],
+  title: "USA Physics PhD Finder - For Nepali Students",
+  description: "Comprehensive guide for Nepali MSc Physics students from Tribhuvan University to find PhD programs in the USA. Explore universities, national labs, fellowships, and get AI-powered assistance.",
+  keywords: ["USA", "PhD", "Physics", "Fellowship", "Nepal", "Tribhuvan University", "NSF", "Fulbright", "American universities", "study in USA", "GRE", "TOEFL"],
+  authors: [{ name: "USA Physics PhD Finder" }],
   openGraph: {
-    title: "China Physics PhD Finder",
-    description: "Find your PhD program in China - Guide for Nepali Physics students",
+    title: "USA Physics PhD Finder",
+    description: "Find your PhD program in the USA - Guide for Nepali Physics students",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "China Physics PhD Finder",
-    description: "Find your PhD program in China - Guide for Nepali Physics students",
+    title: "USA Physics PhD Finder",
+    description: "Find your PhD program in the USA - Guide for Nepali Physics students",
   },
 };
 

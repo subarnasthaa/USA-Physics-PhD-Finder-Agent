@@ -10,9 +10,8 @@ interface DeadlineAlert {
   daysRemaining: number | null
   isWatchlisted: boolean
   fields: string
-  cscDesignated: boolean
-  englishProgram: boolean
-  scholarshipTypes: string
+  fundingType: string
+  greNotRequired: boolean
 }
 
 function parseDeadlineAndCalculateDays(deadlineStr: string): number | null {
@@ -26,7 +25,6 @@ function parseDeadlineAndCalculateDays(deadlineStr: string): number | null {
     const currentDay = new Date().getDate()
     const now = new Date(currentYear, currentMonth, currentDay)
 
-    // Try parsing common formats
     // Format: "MM/DD/YYYY" or "M/D/YYYY"
     const slashMatch = deadlineStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
     if (slashMatch) {
@@ -45,7 +43,7 @@ function parseDeadlineAndCalculateDays(deadlineStr: string): number | null {
       return diff
     }
 
-    // Format: "Month DD, YYYY" e.g., "March 15, 2026"
+    // Format: "Month DD, YYYY" e.g., "December 15, 2025"
     const longMatch = deadlineStr.match(/^(\w+)\s+(\d{1,2}),?\s+(\d{4})$/)
     if (longMatch) {
       const deadline = new Date(deadlineStr)
@@ -55,22 +53,7 @@ function parseDeadlineAndCalculateDays(deadlineStr: string): number | null {
       }
     }
 
-    // Format: "MM-DD" or "M-D" (assume current or next year)
-    const shortMatch = deadlineStr.match(/^(\d{1,2})-(\d{1,2})$/)
-    if (shortMatch) {
-      const [, month, day] = shortMatch
-      let year = currentYear
-      let deadline = new Date(year, parseInt(month) - 1, parseInt(day))
-      // If the deadline has already passed this year, use next year
-      if (deadline < now) {
-        year += 1
-        deadline = new Date(year, parseInt(month) - 1, parseInt(day))
-      }
-      const diff = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-      return diff
-    }
-
-    // Format: "Month DD" (e.g., "March 15")
+    // Format: "Month DD" (e.g., "December 15")
     const monthDayMatch = deadlineStr.match(/^(\w+)\s+(\d{1,2})$/)
     if (monthDayMatch) {
       const deadline = new Date(`${deadlineStr}, ${currentYear}`)
@@ -105,8 +88,9 @@ export async function GET(request: Request) {
     const alerts: DeadlineAlert[] = []
 
     for (const uni of universities) {
-      const daysRemaining = parseDeadlineAndCalculateDays(uni.deadline)
+      const daysRemaining = parseDeadlineAndCalculateDays(uni.fallDeadline || uni.deadline)
       const isWatchlisted = watchlistedIdSet.has(uni.id)
+      const greNotRequired = uni.greRequired === 'Not Required' || uni.greRequired === 'Waived'
 
       // Include universities with upcoming deadlines or watchlisted
       if (isWatchlisted || (daysRemaining !== null && daysRemaining >= -30)) {
@@ -119,9 +103,8 @@ export async function GET(request: Request) {
           daysRemaining,
           isWatchlisted,
           fields: uni.fields,
-          cscDesignated: uni.cscDesignated,
-          englishProgram: uni.englishProgram,
-          scholarshipTypes: uni.scholarshipTypes,
+          fundingType: uni.fundingType,
+          greNotRequired,
         })
       }
     }

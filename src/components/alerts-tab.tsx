@@ -12,7 +12,7 @@ import {
   Loader2,
   BellRing,
 } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -27,14 +27,14 @@ interface Alert {
   id: string
   name: string
   city: string
+  state: string
   type: string
   deadline: string
   daysRemaining: number | null
   isWatchlisted: boolean
   fields: string
-  cscDesignated: boolean
-  englishProgram: boolean
-  scholarshipTypes: string
+  fundingType: string
+  greNotRequired: boolean
 }
 
 interface AlertsTabProps {
@@ -92,7 +92,7 @@ export default function AlertsTab({ onNavigate, watchlistedIdsParam }: AlertsTab
     if (daysRemaining === null) return 'gray'
     if (daysRemaining < 30) return 'red'
     if (daysRemaining < 60) return 'amber'
-    return 'emerald'
+    return 'blue'
   }
 
   const getAlertIcon = (daysRemaining: number | null) => {
@@ -105,7 +105,7 @@ export default function AlertsTab({ onNavigate, watchlistedIdsParam }: AlertsTab
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="size-8 text-emerald-600 animate-spin" />
+        <Loader2 className="size-8 text-blue-600 animate-spin" />
         <span className="ml-3 text-gray-600 dark:text-gray-400">Loading alerts...</span>
       </div>
     )
@@ -151,12 +151,12 @@ export default function AlertsTab({ onNavigate, watchlistedIdsParam }: AlertsTab
             <div className="text-xs text-amber-600 dark:text-amber-500">Upcoming (30-60d)</div>
           </CardContent>
         </Card>
-        <Card className="bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800">
+        <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
           <CardContent className="p-3 text-center">
-            <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">
+            <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">
               {alerts.filter((a) => a.daysRemaining !== null && a.daysRemaining >= 60).length}
             </div>
-            <div className="text-xs text-emerald-600 dark:text-emerald-500">Safe (&gt;60d)</div>
+            <div className="text-xs text-blue-600 dark:text-blue-500">Safe (&gt;60d)</div>
           </CardContent>
         </Card>
       </div>
@@ -195,11 +195,11 @@ export default function AlertsTab({ onNavigate, watchlistedIdsParam }: AlertsTab
                 icon: 'text-amber-500',
                 badge: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
               },
-              emerald: {
-                border: 'border-l-emerald-500',
-                bg: 'bg-emerald-50 dark:bg-emerald-950/20',
-                icon: 'text-emerald-500',
-                badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+              blue: {
+                border: 'border-l-blue-500',
+                bg: 'bg-blue-50 dark:bg-blue-950/20',
+                icon: 'text-blue-500',
+                badge: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
               },
               gray: {
                 border: 'border-l-gray-400',
@@ -229,19 +229,19 @@ export default function AlertsTab({ onNavigate, watchlistedIdsParam }: AlertsTab
 
                       <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-2">
                         <MapPin className="size-3" />
-                        <span>{alert.city}</span>
+                        <span>{alert.city}, {alert.state}</span>
                         <span>·</span>
                         <Badge variant="outline" className="text-xs py-0 px-1">
                           {alert.type}
                         </Badge>
-                        {alert.cscDesignated && (
-                          <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-xs py-0 px-1">
-                            CSC
+                        {alert.fundingType === 'Full' && (
+                          <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-xs py-0 px-1">
+                            Fully Funded
                           </Badge>
                         )}
-                        {alert.englishProgram && (
+                        {alert.greNotRequired && (
                           <Badge className="bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400 text-xs py-0 px-1">
-                            English
+                            GRE Not Required
                           </Badge>
                         )}
                       </div>
@@ -279,7 +279,7 @@ export default function AlertsTab({ onNavigate, watchlistedIdsParam }: AlertsTab
                       variant="ghost"
                       size="sm"
                       onClick={() => toggleNotify(alert.id)}
-                      className={`shrink-0 text-xs ${isNotified ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30' : 'text-gray-400'}`}
+                      className={`shrink-0 text-xs ${isNotified ? 'text-blue-600 bg-blue-50 dark:bg-blue-950/30' : 'text-gray-400'}`}
                     >
                       <BellRing className="size-3.5 mr-1" />
                       {isNotified ? 'On' : 'Notify'}

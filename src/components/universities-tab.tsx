@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { Search, Filter, Star, X, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Switch } from '@/components/ui/switch'
 import {
   Select,
@@ -13,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import UniversityCard, { type University } from '@/components/university-card'
+import UniversityCard from '@/components/university-card'
 
 interface UniversitiesTabProps {
   watchlistedIdsParam: string
@@ -23,16 +22,16 @@ interface UniversitiesTabProps {
 }
 
 export default function UniversitiesTab({ watchlistedIdsParam, toggleWatchlist, isWatchlisted, typeFilter }: UniversitiesTabProps) {
-  const [universities, setUniversities] = useState<University[]>([])
+  const [universities, setUniversities] = useState<Record<string, unknown>[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [cscOnly, setCscOnly] = useState(false)
-  const [englishOnly, setEnglishOnly] = useState(false)
+  const [fundedOnly, setFundedOnly] = useState(false)
+  const [greNotRequired, setGreNotRequired] = useState(false)
   const [watchlistedOnly, setWatchlistedOnly] = useState(false)
-  const [cityFilter, setCityFilter] = useState('all')
+  const [stateFilter, setStateFilter] = useState('all')
   const [fieldFilter, setFieldFilter] = useState('all')
   const [visibleCount, setVisibleCount] = useState(12)
-  const [cities, setCities] = useState<string[]>([])
+  const [states, setStates] = useState<string[]>([])
   const [fields, setFields] = useState<string[]>([])
 
   const fetchUniversities = useCallback(async () => {
@@ -41,10 +40,10 @@ export default function UniversitiesTab({ watchlistedIdsParam, toggleWatchlist, 
       const params = new URLSearchParams()
       if (search) params.set('search', search)
       if (typeFilter) params.set('type', typeFilter)
-      if (cscOnly) params.set('cscOnly', 'true')
-      if (englishOnly) params.set('englishOnly', 'true')
+      if (fundedOnly) params.set('fundedOnly', 'true')
+      if (greNotRequired) params.set('greNotRequired', 'true')
       if (watchlistedOnly) params.set('watchlisted', 'true')
-      if (cityFilter && cityFilter !== 'all') params.set('city', cityFilter)
+      if (stateFilter && stateFilter !== 'all') params.set('state', stateFilter)
       if (fieldFilter && fieldFilter !== 'all') params.set('field', fieldFilter)
       if (watchlistedIdsParam) params.set('watchlistedIds', watchlistedIdsParam)
 
@@ -58,7 +57,7 @@ export default function UniversitiesTab({ watchlistedIdsParam, toggleWatchlist, 
     } finally {
       setLoading(false)
     }
-  }, [search, typeFilter, cscOnly, englishOnly, watchlistedOnly, cityFilter, fieldFilter, watchlistedIdsParam])
+  }, [search, typeFilter, fundedOnly, greNotRequired, watchlistedOnly, stateFilter, fieldFilter, watchlistedIdsParam])
 
   // Fetch filter options once
   useEffect(() => {
@@ -66,14 +65,16 @@ export default function UniversitiesTab({ watchlistedIdsParam, toggleWatchlist, 
       try {
         const res = await fetch('/api/universities')
         if (res.ok) {
-          const data: University[] = await res.json()
-          const citySet = new Set<string>()
+          const data: Record<string, unknown>[] = await res.json()
+          const stateSet = new Set<string>()
           const fieldSet = new Set<string>()
           for (const uni of data) {
-            citySet.add(uni.city)
-            uni.fields.split(',').map((f) => f.trim()).filter(Boolean).forEach((f) => fieldSet.add(f))
+            if (uni.state && typeof uni.state === 'string') stateSet.add(uni.state)
+            if (uni.fields && typeof uni.fields === 'string') {
+              uni.fields.split(',').map((f) => f.trim()).filter(Boolean).forEach((f) => fieldSet.add(f))
+            }
           }
-          setCities(Array.from(citySet).sort())
+          setStates(Array.from(stateSet).sort())
           setFields(Array.from(fieldSet).sort())
         }
       } catch (err) {
@@ -90,20 +91,20 @@ export default function UniversitiesTab({ watchlistedIdsParam, toggleWatchlist, 
   // Reset visible count when filters change
   useEffect(() => {
     setVisibleCount(12)
-  }, [search, typeFilter, cscOnly, englishOnly, watchlistedOnly, cityFilter, fieldFilter])
+  }, [search, typeFilter, fundedOnly, greNotRequired, watchlistedOnly, stateFilter, fieldFilter])
 
   const handleToggleWatchlist = (id: string) => {
     toggleWatchlist(id)
   }
 
-  const hasActiveFilters = cscOnly || englishOnly || watchlistedOnly || cityFilter !== 'all' || fieldFilter !== 'all' || search !== ''
+  const hasActiveFilters = fundedOnly || greNotRequired || watchlistedOnly || stateFilter !== 'all' || fieldFilter !== 'all' || search !== ''
 
   const clearFilters = () => {
     setSearch('')
-    setCscOnly(false)
-    setEnglishOnly(false)
+    setFundedOnly(false)
+    setGreNotRequired(false)
     setWatchlistedOnly(false)
-    setCityFilter('all')
+    setStateFilter('all')
     setFieldFilter('all')
   }
 
@@ -116,7 +117,7 @@ export default function UniversitiesTab({ watchlistedIdsParam, toggleWatchlist, 
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
         <Input
           type="text"
-          placeholder="Search universities, cities, fields, departments..."
+          placeholder="Search universities, states, fields, departments..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-10 h-10"
@@ -141,12 +142,12 @@ export default function UniversitiesTab({ watchlistedIdsParam, toggleWatchlist, 
         {/* Toggle Filters */}
         <div className="flex items-center gap-3 flex-wrap">
           <label className="flex items-center gap-1.5 cursor-pointer">
-            <Switch checked={cscOnly} onCheckedChange={setCscOnly} />
-            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">CSC Only</span>
+            <Switch checked={fundedOnly} onCheckedChange={setFundedOnly} />
+            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Fully Funded</span>
           </label>
           <label className="flex items-center gap-1.5 cursor-pointer">
-            <Switch checked={englishOnly} onCheckedChange={setEnglishOnly} />
-            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">English Only</span>
+            <Switch checked={greNotRequired} onCheckedChange={setGreNotRequired} />
+            <span className="text-xs font-medium text-gray-700 dark:text-gray-300">GRE Not Required</span>
           </label>
           <label className="flex items-center gap-1.5 cursor-pointer">
             <Switch checked={watchlistedOnly} onCheckedChange={setWatchlistedOnly} />
@@ -158,14 +159,14 @@ export default function UniversitiesTab({ watchlistedIdsParam, toggleWatchlist, 
 
         {/* Dropdown Filters */}
         <div className="flex gap-2 flex-wrap">
-          <Select value={cityFilter} onValueChange={setCityFilter}>
+          <Select value={stateFilter} onValueChange={setStateFilter}>
             <SelectTrigger className="w-[130px] h-8 text-xs">
-              <SelectValue placeholder="All Cities" />
+              <SelectValue placeholder="All States" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Cities</SelectItem>
-              {cities.map((city) => (
-                <SelectItem key={city} value={city}>{city}</SelectItem>
+              <SelectItem value="all">All States</SelectItem>
+              {states.map((state) => (
+                <SelectItem key={state} value={state}>{state}</SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -201,7 +202,7 @@ export default function UniversitiesTab({ watchlistedIdsParam, toggleWatchlist, 
             <>
               Showing <span className="font-semibold text-gray-900 dark:text-white">{visibleUniversities.length}</span> of{' '}
               <span className="font-semibold text-gray-900 dark:text-white">{universities.length}</span>{' '}
-              {typeFilter === 'CAS Institute' ? 'institutes' : 'universities'}
+              universities
             </>
           )}
         </p>
@@ -210,7 +211,7 @@ export default function UniversitiesTab({ watchlistedIdsParam, toggleWatchlist, 
       {/* University Grid */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="size-8 text-emerald-600 animate-spin" />
+          <Loader2 className="size-8 text-blue-600 animate-spin" />
           <span className="ml-3 text-gray-600 dark:text-gray-400">Loading universities...</span>
         </div>
       ) : universities.length === 0 ? (
@@ -226,8 +227,8 @@ export default function UniversitiesTab({ watchlistedIdsParam, toggleWatchlist, 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {visibleUniversities.map((uni) => (
             <UniversityCard
-              key={uni.id}
-              university={uni}
+              key={uni.id as string}
+              university={uni as Parameters<typeof UniversityCard>[0]['university']}
               toggleWatchlist={handleToggleWatchlist}
               isWatchlisted={isWatchlisted}
             />
@@ -241,7 +242,7 @@ export default function UniversitiesTab({ watchlistedIdsParam, toggleWatchlist, 
           <Button
             variant="outline"
             onClick={() => setVisibleCount((prev) => prev + 12)}
-            className="text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800"
+            className="text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800"
           >
             Load More ({universities.length - visibleCount} remaining)
           </Button>

@@ -15,7 +15,6 @@ import {
 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface Message {
   id: string
@@ -26,29 +25,29 @@ interface Message {
 
 const suggestedPrompts = [
   {
-    label: 'Best universities for condensed matter physics',
+    label: 'Best universities for astrophysics',
     icon: BookOpen,
-    prompt: 'What are the best universities in China for condensed matter physics PhD?',
+    prompt: 'What are the best US universities for astrophysics PhD?',
   },
   {
-    label: 'How to apply for CSC scholarship',
+    label: 'How to get funding',
     icon: Award,
-    prompt: 'How do I apply for CSC scholarship as a Nepali student?',
+    prompt: 'How can Nepali students get funding for a US PhD in physics?',
   },
   {
-    label: 'Required documents',
+    label: 'GRE requirements',
     icon: FileText,
-    prompt: 'What documents do I need to apply for a PhD in China?',
+    prompt: 'Do I need GRE for US physics PhD programs?',
   },
   {
-    label: 'About CAS institutes',
+    label: 'About national labs',
     icon: Globe,
-    prompt: 'Tell me about CAS institutes for physics research in China',
+    prompt: 'Tell me about national lab opportunities for physics research',
   },
   {
     label: 'Application timeline',
     icon: HelpCircle,
-    prompt: 'What is the application timeline for September 2026 intake?',
+    prompt: 'What is the application timeline for Fall 2026 admission?',
   },
 ]
 
@@ -149,14 +148,14 @@ export default function AgentChatTab({ watchlistedIds, watchlistedIdsParam }: Ag
         {/* Welcome Message */}
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center py-8">
-            <div className="size-16 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mb-4">
-              <Bot className="size-8 text-emerald-600 dark:text-emerald-400" />
+            <div className="size-16 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
+              <Bot className="size-8 text-blue-600 dark:text-blue-400" />
             </div>
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
-              China Physics PhD Finder Agent
+              USA Physics PhD Finder Agent
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mb-6">
-              I can help you find the best PhD programs, explain scholarship options, and guide you through the application process.
+              I can help you find the best PhD programs in the USA, explain fellowship options, and guide you through the application process.
             </p>
 
             {/* Suggested Prompts */}
@@ -168,9 +167,9 @@ export default function AgentChatTab({ watchlistedIds, watchlistedIdsParam }: Ag
                     key={suggestion.label}
                     onClick={() => handleSuggestedPrompt(suggestion.prompt)}
                     disabled={loading}
-                    className="flex items-center gap-2 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 transition-colors text-left disabled:opacity-50"
+                    className="flex items-center gap-2 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-colors text-left disabled:opacity-50"
                   >
-                    <Icon className="size-4 text-emerald-600 shrink-0" />
+                    <Icon className="size-4 text-blue-600 shrink-0" />
                     <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{suggestion.label}</span>
                   </button>
                 )
@@ -186,19 +185,19 @@ export default function AgentChatTab({ watchlistedIds, watchlistedIdsParam }: Ag
             className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             {message.role === 'assistant' && (
-              <div className="size-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
-                <Bot className="size-4 text-emerald-600 dark:text-emerald-400" />
+              <div className="size-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+                <Bot className="size-4 text-blue-600 dark:text-blue-400" />
               </div>
             )}
             <div
               className={`max-w-[80%] sm:max-w-[70%] rounded-2xl px-4 py-3 ${
                 message.role === 'user'
-                  ? 'bg-emerald-600 text-white rounded-br-md'
+                  ? 'bg-blue-700 text-white rounded-br-md'
                   : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-bl-md'
               }`}
             >
               <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
-              <div className={`text-xs mt-1 ${message.role === 'user' ? 'text-emerald-200' : 'text-gray-400 dark:text-gray-500'}`}>
+              <div className={`text-xs mt-1 ${message.role === 'user' ? 'text-blue-200' : 'text-gray-400 dark:text-gray-500'}`}>
                 {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </div>
             </div>
@@ -213,14 +212,14 @@ export default function AgentChatTab({ watchlistedIds, watchlistedIdsParam }: Ag
         {/* Loading Indicator */}
         {loading && (
           <div className="flex gap-3 justify-start">
-            <div className="size-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
-              <Bot className="size-4 text-emerald-600 dark:text-emerald-400" />
+            <div className="size-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+              <Bot className="size-4 text-blue-600 dark:text-blue-400" />
             </div>
             <Card className="bg-gray-100 dark:bg-gray-800 rounded-2xl rounded-bl-md">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2">
-                  <Loader2 className="size-4 text-emerald-600 animate-spin" />
-                  <Sparkles className="size-4 text-emerald-500" />
+                  <Loader2 className="size-4 text-blue-600 animate-spin" />
+                  <Sparkles className="size-4 text-blue-500" />
                   <span className="text-sm text-gray-600 dark:text-gray-400">Thinking...</span>
                 </div>
               </CardContent>
@@ -239,9 +238,9 @@ export default function AgentChatTab({ watchlistedIds, watchlistedIdsParam }: Ag
               <button
                 key={suggestion.label}
                 onClick={() => handleSuggestedPrompt(suggestion.prompt)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 transition-colors whitespace-nowrap text-xs text-gray-600 dark:text-gray-400"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-colors whitespace-nowrap text-xs text-gray-600 dark:text-gray-400"
               >
-                <Sparkles className="size-3 text-emerald-500" />
+                <Sparkles className="size-3 text-blue-500" />
                 {suggestion.label}
               </button>
             ))}
@@ -257,14 +256,14 @@ export default function AgentChatTab({ watchlistedIds, watchlistedIdsParam }: Ag
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about PhD programs, scholarships, application process..."
+            placeholder="Ask about PhD programs, fellowships, application process..."
             disabled={loading}
-            className="flex-1 h-10 px-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent disabled:opacity-50"
+            className="flex-1 h-10 px-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
           />
           <Button
             type="submit"
             disabled={loading || !input.trim()}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white h-10 px-4"
+            className="bg-blue-700 hover:bg-blue-800 text-white h-10 px-4"
           >
             {loading ? (
               <Loader2 className="size-4 animate-spin" />

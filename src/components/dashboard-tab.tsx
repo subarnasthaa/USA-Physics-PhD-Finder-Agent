@@ -5,7 +5,7 @@ import {
   GraduationCap,
   Award,
   Globe,
-  Languages,
+  FileCheck,
   ArrowRight,
   MapPin,
   BarChart3,
@@ -18,23 +18,26 @@ import { Button } from '@/components/ui/button'
 
 interface Stats {
   totalUniversities: number
-  totalCASInstitutes: number
-  cscDesignatedCount: number
-  englishProgramsCount: number
+  totalNationalLabs: number
+  fullyFundedCount: number
+  greNotRequiredCount: number
   watchlistedCount: number
   topFields: { field: string; count: number }[]
-  topCities: { city: string; count: number }[]
+  topStates: { state: string; count: number }[]
 }
 
 interface Alert {
   id: string
   name: string
   city: string
+  state: string
   type: string
   deadline: string
   daysRemaining: number | null
   isWatchlisted: boolean
   fields: string
+  fundingType: string
+  greNotRequired: boolean
 }
 
 interface DashboardTabProps {
@@ -90,39 +93,35 @@ export default function DashboardTab({ onNavigate, watchlistedIdsParam }: Dashbo
   const statCards = [
     {
       label: 'Total Universities',
-      value: stats?.totalUniversities ?? 34,
+      value: stats?.totalUniversities ?? 0,
       icon: GraduationCap,
-      color: 'emerald',
-      bgClass: 'bg-emerald-50 dark:bg-emerald-950/30',
-      iconBgClass: 'bg-emerald-100 dark:bg-emerald-900/50',
-      iconClass: 'text-emerald-600 dark:text-emerald-400',
-      valueClass: 'text-emerald-700 dark:text-emerald-300',
+      bgClass: 'bg-blue-50 dark:bg-blue-950/30',
+      iconBgClass: 'bg-blue-100 dark:bg-blue-900/50',
+      iconClass: 'text-blue-600 dark:text-blue-400',
+      valueClass: 'text-blue-700 dark:text-blue-300',
     },
     {
-      label: 'CAS Institutes',
-      value: stats?.totalCASInstitutes ?? 14,
+      label: 'National Labs',
+      value: stats?.totalNationalLabs ?? 0,
       icon: Award,
-      color: 'red',
       bgClass: 'bg-red-50 dark:bg-red-950/30',
       iconBgClass: 'bg-red-100 dark:bg-red-900/50',
       iconClass: 'text-red-600 dark:text-red-400',
       valueClass: 'text-red-700 dark:text-red-300',
     },
     {
-      label: 'CSC Designated',
-      value: stats?.cscDesignatedCount ?? 48,
+      label: 'Fully Funded',
+      value: stats?.fullyFundedCount ?? 0,
       icon: Globe,
-      color: 'emerald',
-      bgClass: 'bg-emerald-50 dark:bg-emerald-950/30',
-      iconBgClass: 'bg-emerald-100 dark:bg-emerald-900/50',
-      iconClass: 'text-emerald-600 dark:text-emerald-400',
-      valueClass: 'text-emerald-700 dark:text-emerald-300',
+      bgClass: 'bg-blue-50 dark:bg-blue-950/30',
+      iconBgClass: 'bg-blue-100 dark:bg-blue-900/50',
+      iconClass: 'text-blue-600 dark:text-blue-400',
+      valueClass: 'text-blue-700 dark:text-blue-300',
     },
     {
-      label: 'English Programs',
-      value: stats?.englishProgramsCount ?? 0,
-      icon: Languages,
-      color: 'sky',
+      label: 'GRE Not Required',
+      value: stats?.greNotRequiredCount ?? 0,
+      icon: FileCheck,
       bgClass: 'bg-sky-50 dark:bg-sky-950/30',
       iconBgClass: 'bg-sky-100 dark:bg-sky-900/50',
       iconClass: 'text-sky-600 dark:text-sky-400',
@@ -135,12 +134,12 @@ export default function DashboardTab({ onNavigate, watchlistedIdsParam }: Dashbo
   return (
     <div className="space-y-6 p-4 md:p-6">
       {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 dark:from-emerald-700 dark:to-emerald-800 rounded-xl p-4 md:p-6 text-white">
+      <div className="bg-gradient-to-r from-blue-700 to-blue-800 dark:from-blue-800 dark:to-blue-900 rounded-xl p-4 md:p-6 text-white">
         <h2 className="text-xl md:text-2xl font-bold mb-1">
-          Namaste! 🙏 Welcome to China Physics PhD Finder
+          Welcome to USA Physics PhD Finder
         </h2>
-        <p className="text-emerald-100 text-sm md:text-base">
-          Your comprehensive guide to finding PhD programs in China. Explore universities, CAS institutes, CSC scholarships, and get AI-powered assistance for your application journey.
+        <p className="text-blue-100 text-sm md:text-base">
+          Your comprehensive guide to finding PhD programs in the USA. Explore universities, national labs, fellowships, and get AI-powered assistance.
         </p>
         <div className="flex flex-wrap gap-2 mt-3">
           <Button
@@ -155,10 +154,10 @@ export default function DashboardTab({ onNavigate, watchlistedIdsParam }: Dashbo
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => onNavigate('csc-guide')}
+            onClick={() => onNavigate('funding-guide')}
             className="bg-white/20 hover:bg-white/30 text-white border-white/30"
           >
-            CSC Scholarship Guide
+            Funding Guide
             <ArrowRight className="size-3.5 ml-1" />
           </Button>
         </div>
@@ -192,7 +191,7 @@ export default function DashboardTab({ onNavigate, watchlistedIdsParam }: Dashbo
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
-              <BarChart3 className="size-4 text-emerald-600" />
+              <BarChart3 className="size-4 text-blue-600" />
               Top Research Fields
             </CardTitle>
           </CardHeader>
@@ -204,7 +203,7 @@ export default function DashboardTab({ onNavigate, watchlistedIdsParam }: Dashbo
                 </div>
                 <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-full h-5 overflow-hidden">
                   <div
-                    className="h-full bg-emerald-500 dark:bg-emerald-600 rounded-full transition-all duration-500"
+                    className="h-full bg-blue-500 dark:bg-blue-600 rounded-full transition-all duration-500"
                     style={{ width: `${Math.max(8, (item.count / maxFieldCount) * 100)}%` }}
                   />
                 </div>
@@ -219,18 +218,18 @@ export default function DashboardTab({ onNavigate, watchlistedIdsParam }: Dashbo
           </CardContent>
         </Card>
 
-        {/* Top Cities */}
+        {/* Top States */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
               <MapPin className="size-4 text-red-600" />
-              Top Cities for Physics PhD
+              Top States for Physics PhD
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {(stats?.topCities ?? []).map((item, idx) => (
-                <div key={item.city} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50">
+              {(stats?.topStates ?? []).map((item, idx) => (
+                <div key={item.state} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50">
                   <div className={`size-8 rounded-full flex items-center justify-center text-sm font-bold ${
                     idx === 0 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400' :
                     idx === 1 ? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' :
@@ -240,10 +239,10 @@ export default function DashboardTab({ onNavigate, watchlistedIdsParam }: Dashbo
                     {idx + 1}
                   </div>
                   <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-900 dark:text-white">{item.city}</div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">{item.state}</div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">{item.count} programs</div>
                   </div>
-                  <div className="size-2 rounded-full bg-emerald-500" />
+                  <div className="size-2 rounded-full bg-blue-500" />
                 </div>
               ))}
             </div>
@@ -257,20 +256,20 @@ export default function DashboardTab({ onNavigate, watchlistedIdsParam }: Dashbo
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-base">
-              <BookOpen className="size-4 text-emerald-600" />
+              <BookOpen className="size-4 text-blue-600" />
               Quick Links
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <button
-              onClick={() => onNavigate('csc-guide')}
-              className="w-full flex items-center gap-3 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 hover:bg-emerald-100 dark:hover:bg-emerald-950/40 transition-colors text-left"
+              onClick={() => onNavigate('funding-guide')}
+              className="w-full flex items-center gap-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-100 dark:hover:bg-blue-950/40 transition-colors text-left"
             >
-              <div className="size-10 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
+              <div className="size-10 rounded-lg bg-blue-700 text-white flex items-center justify-center shrink-0">
                 <Globe className="size-5" />
               </div>
               <div>
-                <div className="text-sm font-semibold text-gray-900 dark:text-white">CSC Scholarship Guide</div>
+                <div className="text-sm font-semibold text-gray-900 dark:text-white">Funding Guide</div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">Complete guide for Nepali students</div>
               </div>
               <ArrowRight className="size-4 text-gray-400 ml-auto" />
@@ -312,7 +311,7 @@ export default function DashboardTab({ onNavigate, watchlistedIdsParam }: Dashbo
                 <Bell className="size-4 text-red-600" />
                 Recent Deadline Alerts
               </CardTitle>
-              <Button variant="ghost" size="sm" onClick={() => onNavigate('alerts')} className="text-xs text-emerald-600">
+              <Button variant="ghost" size="sm" onClick={() => onNavigate('alerts')} className="text-xs text-blue-600">
                 View All
                 <ArrowRight className="size-3 ml-1" />
               </Button>
@@ -329,7 +328,7 @@ export default function DashboardTab({ onNavigate, watchlistedIdsParam }: Dashbo
                       alert.daysRemaining === null ? 'bg-gray-400' :
                       alert.daysRemaining < 30 ? 'bg-red-500' :
                       alert.daysRemaining < 60 ? 'bg-amber-500' :
-                      'bg-emerald-500'
+                      'bg-blue-500'
                     }`} />
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
@@ -343,7 +342,7 @@ export default function DashboardTab({ onNavigate, watchlistedIdsParam }: Dashbo
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full shrink-0 ${
                         alert.daysRemaining < 30 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
                         alert.daysRemaining < 60 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
-                        'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                        'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
                       }`}>
                         {alert.daysRemaining}d
                       </span>

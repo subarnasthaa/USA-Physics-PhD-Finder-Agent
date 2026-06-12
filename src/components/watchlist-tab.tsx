@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Star, Trash2, MapPin, Calendar, Award, Loader2, BookOpen } from 'lucide-react'
+import { Star, Trash2, MapPin, Calendar, Award, Loader2, BookOpen, DollarSign } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -17,13 +17,16 @@ interface University {
   id: string
   name: string
   city: string
-  province: string
+  state: string
   type: string
   department: string
   fields: string
   deadline: string
-  englishProgram: boolean
-  cscDesignated: boolean
+  fundingType: string
+  annualStipend: number | null
+  tuitionWaiver: boolean
+  healthInsurance: boolean
+  greRequired: string
   scholarshipTypes: string
   url: string
   notableProfessors: string
@@ -90,7 +93,7 @@ export default function WatchlistTab({ watchlistedIds, toggleWatchlist, onNaviga
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="size-8 text-emerald-600 animate-spin" />
+        <Loader2 className="size-8 text-blue-600 animate-spin" />
         <span className="ml-3 text-gray-600 dark:text-gray-400">Loading watchlist...</span>
       </div>
     )
@@ -138,7 +141,7 @@ export default function WatchlistTab({ watchlistedIds, toggleWatchlist, onNaviga
               : 'No universities match the selected field filter.'}
           </p>
           {universities.length === 0 && (
-            <Button onClick={() => onNavigate('universities')} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+            <Button onClick={() => onNavigate('universities')} className="bg-blue-600 hover:bg-blue-700 text-white">
               Browse Universities
             </Button>
           )}
@@ -154,29 +157,29 @@ export default function WatchlistTab({ watchlistedIds, toggleWatchlist, onNaviga
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0 space-y-2">
-                      {/* Name & City */}
+                      {/* Name & State */}
                       <div>
                         <h3 className="text-base font-semibold text-gray-900 dark:text-white truncate">{uni.name}</h3>
                         <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400">
                           <MapPin className="size-3.5 shrink-0" />
-                          <span>{uni.city}, {uni.province}</span>
+                          <span>{uni.city}, {uni.state}</span>
                         </div>
                       </div>
 
                       {/* Badges */}
                       <div className="flex flex-wrap gap-1.5">
-                        <Badge variant={uni.type === 'CAS Institute' ? 'default' : 'secondary'} className={
-                          uni.type === 'CAS Institute'
+                        <Badge variant={uni.type === 'National Lab' ? 'default' : 'secondary'} className={
+                          uni.type === 'National Lab'
                             ? 'bg-red-600 hover:bg-red-700 text-white text-xs'
-                            : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 text-xs'
+                            : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 text-xs'
                         }>
                           {uni.type}
                         </Badge>
-                        {uni.cscDesignated && (
-                          <Badge className="bg-emerald-600 text-white text-xs">CSC</Badge>
+                        {uni.fundingType === 'Full' && (
+                          <Badge className="bg-blue-600 text-white text-xs">Fully Funded</Badge>
                         )}
-                        {uni.englishProgram && (
-                          <Badge className="bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300 text-xs">English</Badge>
+                        {(uni.greRequired === 'Not Required' || uni.greRequired === 'Waived') && (
+                          <Badge className="bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300 text-xs">GRE Not Required</Badge>
                         )}
                       </div>
 
@@ -198,6 +201,14 @@ export default function WatchlistTab({ watchlistedIds, toggleWatchlist, onNaviga
                         <Calendar className="size-3.5 shrink-0" />
                         <span>Deadline: <span className="font-medium">{uni.deadline}</span></span>
                       </div>
+
+                      {/* Stipend */}
+                      {uni.annualStipend && (
+                        <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
+                          <DollarSign className="size-3.5 shrink-0" />
+                          <span>Annual Stipend: <span className="font-medium">${uni.annualStipend.toLocaleString()}</span></span>
+                        </div>
+                      )}
 
                       {/* Scholarships */}
                       {scholarships.length > 0 && (

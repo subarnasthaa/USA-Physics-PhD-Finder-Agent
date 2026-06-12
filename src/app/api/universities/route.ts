@@ -7,9 +7,9 @@ export async function GET(request: Request) {
 
     const search = searchParams.get('search')
     const type = searchParams.get('type')
-    const cscOnly = searchParams.get('cscOnly')
-    const englishOnly = searchParams.get('englishOnly')
-    const city = searchParams.get('city')
+    const fundedOnly = searchParams.get('fundedOnly')
+    const greNotRequired = searchParams.get('greNotRequired')
+    const state = searchParams.get('state')
     const field = searchParams.get('field')
     const watchlistedIdsParam = searchParams.get('watchlistedIds')
 
@@ -27,6 +27,7 @@ export async function GET(request: Request) {
         (uni) =>
           uni.name.toLowerCase().includes(searchLower) ||
           uni.city.toLowerCase().includes(searchLower) ||
+          uni.state.toLowerCase().includes(searchLower) ||
           uni.fields.toLowerCase().includes(searchLower) ||
           uni.department.toLowerCase().includes(searchLower) ||
           (uni.researchGroup && uni.researchGroup.toLowerCase().includes(searchLower))
@@ -37,18 +38,18 @@ export async function GET(request: Request) {
       filtered = filtered.filter((uni) => uni.type === type)
     }
 
-    if (cscOnly === 'true') {
-      filtered = filtered.filter((uni) => uni.cscDesignated === true)
+    if (fundedOnly === 'true') {
+      filtered = filtered.filter((uni) => uni.fundingType === 'Full')
     }
 
-    if (englishOnly === 'true') {
-      filtered = filtered.filter((uni) => uni.englishProgram === true)
+    if (greNotRequired === 'true') {
+      filtered = filtered.filter((uni) => uni.greRequired === 'Not Required' || uni.greRequired === 'Waived')
     }
 
-    if (city) {
-      const cityLower = city.toLowerCase()
+    if (state) {
+      const stateLower = state.toLowerCase()
       filtered = filtered.filter((uni) =>
-        uni.city.toLowerCase().includes(cityLower)
+        uni.state.toLowerCase().includes(stateLower)
       )
     }
 

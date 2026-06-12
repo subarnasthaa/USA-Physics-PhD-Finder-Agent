@@ -11,11 +11,12 @@ import {
   ChevronDown,
   ChevronUp,
   Award,
-  Languages,
   BookOpen,
   User,
   MessageSquare,
   ExternalLink,
+  DollarSign,
+  Shield,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -25,22 +26,30 @@ export interface University {
   id: string
   name: string
   city: string
-  province: string
+  state: string
   type: string
   department: string
   researchGroup: string | null
   url: string
   fields: string
   deadline: string
-  englishProgram: boolean
-  hskRequired: boolean
-  hskLevel: string | null
-  cscDesignated: boolean
-  scholarshipTypes: string
-  requiredDocuments: string
+  fallDeadline: string
+  springDeadline: string
+  greRequired: string
+  grePhysicsRequired: string
+  toeflMin: number | null
+  ieltsMin: number | null
+  fundingType: string
+  annualStipend: number | null
+  tuitionWaiver: boolean
+  healthInsurance: boolean
+  acceptanceRate: string | null
   notableProfessors: string
+  nepaliStudents: boolean
+  requiredDocuments: string
+  scholarshipTypes: string
+  notesForNepali: string
   watchlisted: boolean
-  notesForNepali: string | null
   lastUpdated: string
 }
 
@@ -80,7 +89,7 @@ export default function UniversityCard({ university, toggleWatchlist, isWatchlis
             </CardTitle>
             <div className="flex items-center gap-1.5 mt-1 text-sm text-gray-500 dark:text-gray-400">
               <MapPin className="size-3.5 shrink-0" />
-              <span className="truncate">{university.city}, {university.province}</span>
+              <span className="truncate">{university.city}, {university.state}</span>
             </div>
           </div>
           <Button
@@ -98,27 +107,27 @@ export default function UniversityCard({ university, toggleWatchlist, isWatchlis
       <CardContent className="space-y-3">
         {/* Badges */}
         <div className="flex flex-wrap gap-1.5">
-          <Badge variant={university.type === 'CAS Institute' ? 'default' : 'secondary'} className={
-            university.type === 'CAS Institute'
+          <Badge variant={university.type === 'National Lab' ? 'default' : 'secondary'} className={
+            university.type === 'National Lab'
               ? 'bg-red-600 hover:bg-red-700 text-white text-xs'
-              : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 text-xs'
+              : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 text-xs'
           }>
-            {university.type === 'CAS Institute' ? (
+            {university.type === 'National Lab' ? (
               <Award className="size-3 mr-0.5" />
             ) : (
               <GraduationCap className="size-3 mr-0.5" />
             )}
             {university.type}
           </Badge>
-          {university.cscDesignated && (
-            <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs">
-              CSC Designated
+          {university.fundingType === 'Full' && (
+            <Badge className="bg-blue-600 hover:bg-blue-700 text-white text-xs">
+              Fully Funded
             </Badge>
           )}
-          {university.englishProgram && (
+          {(university.greRequired === 'Not Required' || university.greRequired === 'Waived') && (
             <Badge className="bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300 text-xs">
-              <Languages className="size-3 mr-0.5" />
-              English Program
+              <Shield className="size-3 mr-0.5" />
+              GRE Not Required
             </Badge>
           )}
         </div>
@@ -148,13 +157,52 @@ export default function UniversityCard({ university, toggleWatchlist, isWatchlis
         {/* Deadline */}
         <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
           <Calendar className="size-3.5 shrink-0" />
-          <span>Deadline: <span className="font-medium text-gray-800 dark:text-gray-200">{university.deadline}</span></span>
+          <span>
+            {university.fallDeadline || university.springDeadline ? (
+              <>
+                Fall: <span className="font-medium text-gray-800 dark:text-gray-200">{university.fallDeadline || 'N/A'}</span>
+                {' | '}
+                Spring: <span className="font-medium text-gray-800 dark:text-gray-200">{university.springDeadline || 'N/A'}</span>
+              </>
+            ) : (
+              <>
+                Deadline: <span className="font-medium text-gray-800 dark:text-gray-200">{university.deadline}</span>
+              </>
+            )}
+          </span>
         </div>
 
-        {/* HSK Requirement */}
-        {university.hskRequired && university.hskLevel && (
-          <div className="text-xs text-amber-700 dark:text-amber-400">
-            HSK Required: {university.hskLevel}
+        {/* GRE Requirement */}
+        {university.greRequired && (
+          <div className="text-xs text-gray-600 dark:text-gray-400">
+            GRE: <span className={`font-medium ${
+              university.greRequired === 'Not Required' || university.greRequired === 'Waived'
+                ? 'text-sky-700 dark:text-sky-400'
+                : university.greRequired === 'Recommended'
+                  ? 'text-amber-700 dark:text-amber-400'
+                  : 'text-gray-800 dark:text-gray-200'
+            }`}>
+              {university.greRequired}
+            </span>
+          </div>
+        )}
+
+        {/* TOEFL/IELTS */}
+        {(university.toeflMin || university.ieltsMin) && (
+          <div className="text-xs text-gray-600 dark:text-gray-400">
+            {university.toeflMin && <span>TOEFL: <span className="font-medium">{university.toeflMin}+</span></span>}
+            {university.toeflMin && university.ieltsMin && <span> | </span>}
+            {university.ieltsMin && <span>IELTS: <span className="font-medium">{university.ieltsMin}+</span></span>}
+          </div>
+        )}
+
+        {/* Annual Stipend */}
+        {university.annualStipend && (
+          <div className="flex items-center gap-1.5 text-xs">
+            <DollarSign className="size-3.5 shrink-0 text-blue-600" />
+            <span className="text-gray-600 dark:text-gray-400">
+              Stipend: <span className="font-medium text-gray-800 dark:text-gray-200">${university.annualStipend.toLocaleString()}/yr</span>
+            </span>
           </div>
         )}
 
@@ -163,7 +211,7 @@ export default function UniversityCard({ university, toggleWatchlist, isWatchlis
           variant="ghost"
           size="sm"
           onClick={() => setExpanded(!expanded)}
-          className="w-full text-xs text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300"
+          className="w-full text-xs text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
         >
           {expanded ? (
             <>
@@ -192,7 +240,7 @@ export default function UniversityCard({ university, toggleWatchlist, isWatchlis
                   href={university.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline break-all inline-flex items-center gap-1"
+                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline break-all inline-flex items-center gap-1"
                 >
                   {university.url}
                   <ExternalLink className="size-3" />
@@ -221,7 +269,7 @@ export default function UniversityCard({ university, toggleWatchlist, isWatchlis
                 <ul className="space-y-0.5">
                   {professors.map((prof, i) => (
                     <li key={i} className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-1.5">
-                      <span className="text-emerald-500 mt-0.5">•</span>
+                      <span className="text-blue-500 mt-0.5">•</span>
                       {prof}
                     </li>
                   ))}
@@ -256,11 +304,26 @@ export default function UniversityCard({ university, toggleWatchlist, isWatchlis
                 <ul className="space-y-0.5">
                   {documents.map((doc, i) => (
                     <li key={i} className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-1.5">
-                      <span className="text-emerald-500 mt-0.5">☐</span>
+                      <span className="text-blue-500 mt-0.5">☐</span>
                       {doc}
                     </li>
                   ))}
                 </ul>
+              </div>
+            )}
+
+            {/* Stipend Details */}
+            {university.annualStipend && (
+              <div>
+                <div className="flex items-center gap-1.5 text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  <DollarSign className="size-3.5" />
+                  Funding Details
+                </div>
+                <div className="text-xs text-gray-600 dark:text-gray-400 space-y-0.5">
+                  <div>Annual Stipend: ${university.annualStipend.toLocaleString()}</div>
+                  <div>Tuition Waiver: {university.tuitionWaiver ? 'Yes' : 'No'}</div>
+                  <div>Health Insurance: {university.healthInsurance ? 'Included' : 'Not included'}</div>
+                </div>
               </div>
             )}
 
