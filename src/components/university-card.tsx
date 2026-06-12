@@ -46,13 +46,14 @@ export interface University {
 
 interface UniversityCardProps {
   university: University
-  onToggleWatchlist: (id: string, currentlyWatchlisted: boolean) => void
+  toggleWatchlist: (id: string) => void
+  isWatchlisted: (id: string) => boolean
   compact?: boolean
 }
 
-export default function UniversityCard({ university, onToggleWatchlist, compact = false }: UniversityCardProps) {
+export default function UniversityCard({ university, toggleWatchlist, isWatchlisted, compact = false }: UniversityCardProps) {
   const [expanded, setExpanded] = useState(false)
-  const [watchlistLoading, setWatchlistLoading] = useState(false)
+  const watchlisted = isWatchlisted(university.id)
 
   const fields = university.fields.split(',').map((f) => f.trim()).filter(Boolean)
   const professors = university.notableProfessors
@@ -65,13 +66,8 @@ export default function UniversityCard({ university, onToggleWatchlist, compact 
     ? university.scholarshipTypes.split(',').map((s) => s.trim()).filter(Boolean)
     : []
 
-  const handleToggleWatchlist = async () => {
-    setWatchlistLoading(true)
-    try {
-      await onToggleWatchlist(university.id, university.watchlisted)
-    } finally {
-      setWatchlistLoading(false)
-    }
+  const handleToggleWatchlist = () => {
+    toggleWatchlist(university.id)
   }
 
   return (
@@ -91,11 +87,10 @@ export default function UniversityCard({ university, onToggleWatchlist, compact 
             variant="ghost"
             size="icon"
             onClick={handleToggleWatchlist}
-            disabled={watchlistLoading}
-            className={`shrink-0 size-8 ${university.watchlisted ? 'text-amber-500 hover:text-amber-600' : 'text-gray-300 hover:text-amber-400'}`}
-            aria-label={university.watchlisted ? 'Remove from watchlist' : 'Add to watchlist'}
+            className={`shrink-0 size-8 ${watchlisted ? 'text-amber-500 hover:text-amber-600' : 'text-gray-300 hover:text-amber-400'}`}
+            aria-label={watchlisted ? 'Remove from watchlist' : 'Add to watchlist'}
           >
-            <Star className={`size-5 ${university.watchlisted ? 'fill-current' : ''}`} />
+            <Star className={`size-5 ${watchlisted ? 'fill-current' : ''}`} />
           </Button>
         </div>
       </CardHeader>

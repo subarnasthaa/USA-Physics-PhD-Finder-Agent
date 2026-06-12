@@ -39,9 +39,10 @@ interface Alert {
 
 interface DashboardTabProps {
   onNavigate: (tab: string) => void
+  watchlistedIdsParam: string
 }
 
-export default function DashboardTab({ onNavigate }: DashboardTabProps) {
+export default function DashboardTab({ onNavigate, watchlistedIdsParam }: DashboardTabProps) {
   const [stats, setStats] = useState<Stats | null>(null)
   const [recentAlerts, setRecentAlerts] = useState<Alert[]>([])
   const [loading, setLoading] = useState(true)
@@ -50,8 +51,8 @@ export default function DashboardTab({ onNavigate }: DashboardTabProps) {
     async function fetchData() {
       try {
         const [statsRes, alertsRes] = await Promise.all([
-          fetch('/api/stats'),
-          fetch('/api/alerts'),
+          fetch(watchlistedIdsParam ? `/api/stats?watchlistedIds=${watchlistedIdsParam}` : '/api/stats'),
+          fetch(watchlistedIdsParam ? `/api/alerts?watchlistedIds=${watchlistedIdsParam}` : '/api/alerts'),
         ])
         if (statsRes.ok) {
           const statsData = await statsRes.json()

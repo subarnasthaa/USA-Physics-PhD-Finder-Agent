@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { universities } from '@/lib/static-data'
 import ZAI from 'z-ai-web-dev-sdk'
 
 const SYSTEM_PROMPT = `You are the China Physics PhD Finder Agent, specialized in helping Nepali MSc Physics students from Tribhuvan University find and apply to Physics PhD programs in China. You have extensive knowledge of:
@@ -28,62 +28,49 @@ Always be encouraging, detailed, and specific. When possible, mention actual pro
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { message, sessionId } = body
+    const { message, history, watchlistedIds } = body
 
-    if (!message || !sessionId) {
+    if (!message) {
       return NextResponse.json(
-        { error: 'message and sessionId are required' },
+        { error: 'message is required' },
         { status: 400 }
       )
     }
-
-    // Fetch conversation history for this session
-    const history = await db.agentConversation.findMany({
-      where: { sessionId },
-      orderBy: { createdAt: 'asc' },
-      take: 40,
-    })
 
     // Build messages array - z-ai-web-dev-sdk uses 'assistant' role for system prompts
     const messages: Array<{ role: 'assistant' | 'user'; content: string }> = [
       { role: 'assistant', content: SYSTEM_PROMPT },
     ]
 
-    // Fetch watchlisted universities to enrich context
-    const watchlisted = await db.university.findMany({
-      where: { watchlisted: true },
-      take: 10,
-    })
+    // Add watchlist context if provided
+    if (watchlistedIds && Array.isArray(watchlistedIds) && watchlistedIds.length > 0) {
+      const watchlisted = universities.filter((uni) => watchlistedIds.includes(uni.id)).slice(0, 10)
 
-    if (watchlisted.length > 0) {
-      const watchlistContext = watchlisted
-        .map((u) => `${u.name} (${u.city}) - Fields: ${u.fields} - Deadline: ${u.deadline} - CSC: ${u.cscDesignated ? 'Yes' : 'No'} - English: ${u.englishProgram ? 'Yes' : 'No'}`)
-        .join('\n')
-      messages.push({
-        role: 'assistant',
-        content: `The student has these universities in their watchlist:\n${watchlistContext}`,
-      })
+      if (watchlisted.length > 0) {
+        const watchlistContext = watchlisted
+          .map((u) => `${u.name} (${u.city}) - Fields: ${u.fields} - Deadline: ${u.deadline} - CSC: ${u.cscDesignated ? 'Yes' : 'No'} - English: ${u.englishProgram ? 'Yes' : 'No'}`)
+          .join('\n')
+        messages.push({
+          role: 'assistant',
+          content: `The student has these universities in their watchlist:\n${watchlistContext}`,
+        })
+      }
     }
 
-    // Add conversation history
-    for (const msg of history) {
-      messages.push({
-        role: msg.role as 'user' | 'assistant',
-        content: msg.content,
-      })
+    // Add conversation history from client
+    if (history && Array.isArray(history)) {
+      for (const msg of history) {
+        if (msg.role === 'user' || msg.role === 'assistant') {
+          messages.push({
+            role: msg.role,
+            content: msg.content,
+          })
+        }
+      }
     }
 
     // Add current user message
     messages.push({ role: 'user', content: message })
-
-    // Save user message
-    await db.agentConversation.create({
-      data: {
-        sessionId,
-        role: 'user',
-        content: message,
-      },
-    })
 
     // Call AI using z-ai-web-dev-sdk
     const zai = await ZAI.create()
@@ -96,18 +83,8 @@ export async function POST(request: Request) {
       completion?.choices?.[0]?.message?.content ||
       'I apologize, I could not generate a response. Please try again.'
 
-    // Save assistant response
-    await db.agentConversation.create({
-      data: {
-        sessionId,
-        role: 'assistant',
-        content: assistantMessage,
-      },
-    })
-
     return NextResponse.json({
       response: assistantMessage,
-      sessionId,
     })
   } catch (error) {
     console.error('Error in agent chat:', error)

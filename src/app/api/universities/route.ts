@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { universities } from '@/lib/static-data'
 
 export async function GET(request: Request) {
   try {
@@ -11,94 +11,68 @@ export async function GET(request: Request) {
     const englishOnly = searchParams.get('englishOnly')
     const city = searchParams.get('city')
     const field = searchParams.get('field')
-    const watchlisted = searchParams.get('watchlisted')
+    const watchlistedIdsParam = searchParams.get('watchlistedIds')
 
-    const where = {} as Record<string, unknown>
+    const watchlistedIdSet = new Set(
+      watchlistedIdsParam
+        ? watchlistedIdsParam.split(',').map((id) => id.trim()).filter(Boolean)
+        : []
+    )
+
+    let filtered = [...universities]
 
     if (search) {
-      where.OR = [
-        { name: { contains: search } },
-        { city: { contains: search } },
-        { fields: { contains: search } },
-        { department: { contains: search } },
-        { researchGroup: { contains: search } },
-      ]
+      const searchLower = search.toLowerCase()
+      filtered = filtered.filter(
+        (uni) =>
+          uni.name.toLowerCase().includes(searchLower) ||
+          uni.city.toLowerCase().includes(searchLower) ||
+          uni.fields.toLowerCase().includes(searchLower) ||
+          uni.department.toLowerCase().includes(searchLower) ||
+          (uni.researchGroup && uni.researchGroup.toLowerCase().includes(searchLower))
+      )
     }
 
     if (type) {
-      where.type = type
+      filtered = filtered.filter((uni) => uni.type === type)
     }
 
     if (cscOnly === 'true') {
-      where.cscDesignated = true
+      filtered = filtered.filter((uni) => uni.cscDesignated === true)
     }
 
     if (englishOnly === 'true') {
-      where.englishProgram = true
+      filtered = filtered.filter((uni) => uni.englishProgram === true)
     }
 
     if (city) {
-      where.city = { contains: city }
+      const cityLower = city.toLowerCase()
+      filtered = filtered.filter((uni) =>
+        uni.city.toLowerCase().includes(cityLower)
+      )
     }
 
     if (field) {
-      where.fields = { contains: field }
+      const fieldLower = field.toLowerCase()
+      filtered = filtered.filter((uni) =>
+        uni.fields.toLowerCase().includes(fieldLower)
+      )
     }
 
-    if (watchlisted === 'true') {
-      where.watchlisted = true
-    }
+    // Sort by name ascending
+    filtered.sort((a, b) => a.name.localeCompare(b.name))
 
-    const universities = await db.university.findMany({
-      where,
-      orderBy: { name: 'asc' },
-      include: {
-        watchlistItems: true,
-      },
-    })
+    // Add watchlisted field dynamically
+    const result = filtered.map((uni) => ({
+      ...uni,
+      watchlisted: watchlistedIdSet.has(uni.id),
+    }))
 
-    return NextResponse.json(universities)
+    return NextResponse.json(result)
   } catch (error) {
     console.error('Error fetching universities:', error)
     return NextResponse.json(
       { error: 'Failed to fetch universities' },
-      { status: 500 }
-    )
-  }
-}
-
-export async function POST(request: Request) {
-  try {
-    const body = await request.json()
-
-    const university = await db.university.create({
-      data: {
-        name: body.name,
-        city: body.city,
-        province: body.province,
-        type: body.type,
-        department: body.department,
-        researchGroup: body.researchGroup,
-        url: body.url,
-        fields: body.fields,
-        deadline: body.deadline,
-        englishProgram: body.englishProgram ?? false,
-        hskRequired: body.hskRequired ?? false,
-        hskLevel: body.hskLevel,
-        cscDesignated: body.cscDesignated ?? false,
-        scholarshipTypes: body.scholarshipTypes,
-        requiredDocuments: body.requiredDocuments,
-        notableProfessors: body.notableProfessors,
-        watchlisted: body.watchlisted ?? false,
-        notesForNepali: body.notesForNepali,
-      },
-    })
-
-    return NextResponse.json(university, { status: 201 })
-  } catch (error) {
-    console.error('Error creating university:', error)
-    return NextResponse.json(
-      { error: 'Failed to create university' },
       { status: 500 }
     )
   }

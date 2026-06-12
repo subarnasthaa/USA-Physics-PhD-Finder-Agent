@@ -16,11 +16,13 @@ import {
 import UniversityCard, { type University } from '@/components/university-card'
 
 interface UniversitiesTabProps {
-  onToggleWatchlist: (id: string, currentlyWatchlisted: boolean) => Promise<void>
+  watchlistedIdsParam: string
+  toggleWatchlist: (id: string) => void
+  isWatchlisted: (id: string) => boolean
   typeFilter?: string
 }
 
-export default function UniversitiesTab({ onToggleWatchlist, typeFilter }: UniversitiesTabProps) {
+export default function UniversitiesTab({ watchlistedIdsParam, toggleWatchlist, isWatchlisted, typeFilter }: UniversitiesTabProps) {
   const [universities, setUniversities] = useState<University[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -44,6 +46,7 @@ export default function UniversitiesTab({ onToggleWatchlist, typeFilter }: Unive
       if (watchlistedOnly) params.set('watchlisted', 'true')
       if (cityFilter && cityFilter !== 'all') params.set('city', cityFilter)
       if (fieldFilter && fieldFilter !== 'all') params.set('field', fieldFilter)
+      if (watchlistedIdsParam) params.set('watchlistedIds', watchlistedIdsParam)
 
       const res = await fetch(`/api/universities?${params.toString()}`)
       if (res.ok) {
@@ -55,7 +58,7 @@ export default function UniversitiesTab({ onToggleWatchlist, typeFilter }: Unive
     } finally {
       setLoading(false)
     }
-  }, [search, typeFilter, cscOnly, englishOnly, watchlistedOnly, cityFilter, fieldFilter])
+  }, [search, typeFilter, cscOnly, englishOnly, watchlistedOnly, cityFilter, fieldFilter, watchlistedIdsParam])
 
   // Fetch filter options once
   useEffect(() => {
@@ -89,16 +92,8 @@ export default function UniversitiesTab({ onToggleWatchlist, typeFilter }: Unive
     setVisibleCount(12)
   }, [search, typeFilter, cscOnly, englishOnly, watchlistedOnly, cityFilter, fieldFilter])
 
-  const handleToggleWatchlist = async (id: string, currentlyWatchlisted: boolean) => {
-    try {
-      await onToggleWatchlist(id, currentlyWatchlisted)
-      // Update local state
-      setUniversities((prev) =>
-        prev.map((u) => (u.id === id ? { ...u, watchlisted: !currentlyWatchlisted } : u))
-      )
-    } catch (err) {
-      console.error('Error toggling watchlist:', err)
-    }
+  const handleToggleWatchlist = (id: string) => {
+    toggleWatchlist(id)
   }
 
   const hasActiveFilters = cscOnly || englishOnly || watchlistedOnly || cityFilter !== 'all' || fieldFilter !== 'all' || search !== ''
@@ -233,7 +228,8 @@ export default function UniversitiesTab({ onToggleWatchlist, typeFilter }: Unive
             <UniversityCard
               key={uni.id}
               university={uni}
-              onToggleWatchlist={handleToggleWatchlist}
+              toggleWatchlist={handleToggleWatchlist}
+              isWatchlisted={isWatchlisted}
             />
           ))}
         </div>

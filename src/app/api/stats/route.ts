@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { universities } from '@/lib/static-data'
 
 interface FieldCount {
   field: string
@@ -11,30 +11,27 @@ interface CityCount {
   count: number
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url)
+    const watchlistedIdsParam = searchParams.get('watchlistedIds')
+
+    const watchlistedIdSet = new Set(
+      watchlistedIdsParam
+        ? watchlistedIdsParam.split(',').map((id) => id.trim()).filter(Boolean)
+        : []
+    )
+
     // Basic counts
-    const [
-      totalUniversities,
-      totalCASInstitutes,
-      cscDesignatedCount,
-      englishProgramsCount,
-      watchlistedCount,
-      allUniversities,
-    ] = await Promise.all([
-      db.university.count({ where: { type: 'University' } }),
-      db.university.count({ where: { type: 'CAS Institute' } }),
-      db.university.count({ where: { cscDesignated: true } }),
-      db.university.count({ where: { englishProgram: true } }),
-      db.university.count({ where: { watchlisted: true } }),
-      db.university.findMany({
-        select: { fields: true, city: true },
-      }),
-    ])
+    const totalUniversities = universities.filter((uni) => uni.type === 'University').length
+    const totalCASInstitutes = universities.filter((uni) => uni.type === 'CAS Institute').length
+    const cscDesignatedCount = universities.filter((uni) => uni.cscDesignated).length
+    const englishProgramsCount = universities.filter((uni) => uni.englishProgram).length
+    const watchlistedCount = universities.filter((uni) => watchlistedIdSet.has(uni.id)).length
 
     // Calculate field frequency
     const fieldMap = new Map<string, number>()
-    for (const uni of allUniversities) {
+    for (const uni of universities) {
       if (uni.fields) {
         const fields = uni.fields.split(',').map((f) => f.trim()).filter(Boolean)
         for (const field of fields) {
@@ -50,7 +47,7 @@ export async function GET() {
 
     // Calculate city frequency
     const cityMap = new Map<string, number>()
-    for (const uni of allUniversities) {
+    for (const uni of universities) {
       if (uni.city) {
         cityMap.set(uni.city, (cityMap.get(uni.city) || 0) + 1)
       }

@@ -39,9 +39,10 @@ interface Alert {
 
 interface AlertsTabProps {
   onNavigate: (tab: string) => void
+  watchlistedIdsParam: string
 }
 
-export default function AlertsTab({ onNavigate }: AlertsTabProps) {
+export default function AlertsTab({ onNavigate, watchlistedIdsParam }: AlertsTabProps) {
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
@@ -50,7 +51,7 @@ export default function AlertsTab({ onNavigate }: AlertsTabProps) {
   useEffect(() => {
     async function fetchAlerts() {
       try {
-        const res = await fetch('/api/alerts')
+        const res = await fetch(watchlistedIdsParam ? `/api/alerts?watchlistedIds=${watchlistedIdsParam}` : '/api/alerts')
         if (res.ok) {
           const data = await res.json()
           setAlerts(data)

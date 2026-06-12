@@ -52,7 +52,12 @@ const suggestedPrompts = [
   },
 ]
 
-export default function AgentChatTab() {
+interface AgentChatTabProps {
+  watchlistedIds: string[]
+  watchlistedIdsParam: string
+}
+
+export default function AgentChatTab({ watchlistedIds, watchlistedIdsParam }: AgentChatTabProps) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -91,6 +96,8 @@ export default function AgentChatTab() {
         body: JSON.stringify({
           message: text.trim(),
           sessionId,
+          watchlistedIds,
+          history: messages.map((m) => ({ role: m.role, content: m.content })),
         }),
       })
 

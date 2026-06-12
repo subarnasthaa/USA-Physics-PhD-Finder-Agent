@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { universities } from '@/lib/static-data'
 
 interface DeadlineAlert {
   id: string
@@ -91,21 +91,25 @@ function parseDeadlineAndCalculateDays(deadlineStr: string): number | null {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const universities = await db.university.findMany({
-      include: {
-        watchlistItems: true,
-      },
-    })
+    const { searchParams } = new URL(request.url)
+    const watchlistedIdsParam = searchParams.get('watchlistedIds')
+
+    const watchlistedIdSet = new Set(
+      watchlistedIdsParam
+        ? watchlistedIdsParam.split(',').map((id) => id.trim()).filter(Boolean)
+        : []
+    )
 
     const alerts: DeadlineAlert[] = []
 
     for (const uni of universities) {
       const daysRemaining = parseDeadlineAndCalculateDays(uni.deadline)
+      const isWatchlisted = watchlistedIdSet.has(uni.id)
 
       // Include universities with upcoming deadlines or watchlisted
-      if (uni.watchlisted || (daysRemaining !== null && daysRemaining >= -30)) {
+      if (isWatchlisted || (daysRemaining !== null && daysRemaining >= -30)) {
         alerts.push({
           id: uni.id,
           name: uni.name,
@@ -113,7 +117,7 @@ export async function GET() {
           type: uni.type,
           deadline: uni.deadline,
           daysRemaining,
-          isWatchlisted: uni.watchlisted,
+          isWatchlisted,
           fields: uni.fields,
           cscDesignated: uni.cscDesignated,
           englishProgram: uni.englishProgram,

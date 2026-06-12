@@ -36,9 +36,10 @@ interface CASInstitute {
 
 interface CASInstitutesTabProps {
   onNavigate: (tab: string) => void
+  watchlistedIdsParam: string
 }
 
-export default function CASInstitutesTab({ onNavigate }: CASInstitutesTabProps) {
+export default function CASInstitutesTab({ onNavigate, watchlistedIdsParam }: CASInstitutesTabProps) {
   const [institutes, setInstitutes] = useState<CASInstitute[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -53,6 +54,7 @@ export default function CASInstitutesTab({ onNavigate }: CASInstitutesTabProps) 
       params.set('type', 'CAS Institute')
       if (search) params.set('search', search)
       if (cityFilter !== 'all') params.set('city', cityFilter)
+      if (watchlistedIdsParam) params.set('watchlistedIds', watchlistedIdsParam)
 
       const res = await fetch(`/api/universities?${params.toString()}`)
       if (res.ok) {
@@ -64,7 +66,7 @@ export default function CASInstitutesTab({ onNavigate }: CASInstitutesTabProps) 
     } finally {
       setLoading(false)
     }
-  }, [search, cityFilter])
+  }, [search, cityFilter, watchlistedIdsParam])
 
   useEffect(() => {
     async function fetchCities() {

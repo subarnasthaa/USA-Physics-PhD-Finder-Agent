@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Star, Trash2, RefreshCw, MapPin, Calendar, Award, Loader2, BookOpen } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Star, Trash2, MapPin, Calendar, Award, Loader2, BookOpen } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,88 +13,79 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-interface WatchlistItem {
+interface University {
   id: string
-  universityId: string
-  fieldName: string | null
-  addedAt: string
-  university: {
-    id: string
-    name: string
-    city: string
-    province: string
-    type: string
-    department: string
-    fields: string
-    deadline: string
-    englishProgram: boolean
-    cscDesignated: boolean
-    scholarshipTypes: string
-    url: string
-    notableProfessors: string
-    notesForNepali: string | null
-  }
+  name: string
+  city: string
+  province: string
+  type: string
+  department: string
+  fields: string
+  deadline: string
+  englishProgram: boolean
+  cscDesignated: boolean
+  scholarshipTypes: string
+  url: string
+  notableProfessors: string
+  notesForNepali: string | null
 }
 
 interface WatchlistTabProps {
-  onToggleWatchlist: (id: string, currentlyWatchlisted: boolean) => Promise<void>
+  watchlistedIds: string[]
+  toggleWatchlist: (id: string) => void
   onNavigate: (tab: string) => void
+  watchlistedIdsParam: string
 }
 
-export default function WatchlistTab({ onToggleWatchlist, onNavigate }: WatchlistTabProps) {
-  const [watchlist, setWatchlist] = useState<WatchlistItem[]>([])
+export default function WatchlistTab({ watchlistedIds, toggleWatchlist, onNavigate, watchlistedIdsParam }: WatchlistTabProps) {
+  const [universities, setUniversities] = useState<University[]>([])
   const [loading, setLoading] = useState(true)
   const [fieldFilter, setFieldFilter] = useState('all')
-  const [lastSync, setLastSync] = useState<Date>(new Date())
-  const [syncing, setSyncing] = useState(false)
   const [fields, setFields] = useState<string[]>([])
 
-  const fetchWatchlist = useCallback(async () => {
+  const fetchWatchlistedUniversities = useCallback(async () => {
+    if (watchlistedIds.length === 0) {
+      setUniversities([])
+      setFields([])
+      setLoading(false)
+      return
+    }
+    setLoading(true)
     try {
-      const res = await fetch('/api/watchlist')
+      const params = new URLSearchParams()
+      params.set('watchlistedIds', watchlistedIdsParam)
+      const res = await fetch(`/api/universities?${params.toString()}`)
       if (res.ok) {
-        const data = await res.json()
-        setWatchlist(data)
+        const data: University[] = await res.json()
+        // Filter to only watchlisted ones (in case API returns extras)
+        const watchlistedSet = new Set(watchlistedIds)
+        const filtered = data.filter((u) => watchlistedSet.has(u.id))
+        setUniversities(filtered)
         // Extract fields
         const fieldSet = new Set<string>()
-        for (const item of data) {
-          item.university.fields.split(',').map((f: string) => f.trim()).filter(Boolean).forEach((f: string) => fieldSet.add(f))
+        for (const uni of filtered) {
+          uni.fields.split(',').map((f) => f.trim()).filter(Boolean).forEach((f) => fieldSet.add(f))
         }
         setFields(Array.from(fieldSet).sort())
       }
     } catch (err) {
-      console.error('Error fetching watchlist:', err)
+      console.error('Error fetching watchlisted universities:', err)
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [watchlistedIds.length, watchlistedIdsParam])
 
   useEffect(() => {
-    fetchWatchlist()
-  }, [fetchWatchlist])
+    fetchWatchlistedUniversities()
+  }, [fetchWatchlistedUniversities])
 
-  const handleRemove = async (universityId: string) => {
-    try {
-      await onToggleWatchlist(universityId, true)
-      setWatchlist((prev) => prev.filter((item) => item.universityId !== universityId))
-    } catch (err) {
-      console.error('Error removing from watchlist:', err)
-    }
+  const handleRemove = (universityId: string) => {
+    toggleWatchlist(universityId)
   }
 
-  const handleSync = async () => {
-    setSyncing(true)
-    try {
-      await fetchWatchlist()
-      setLastSync(new Date())
-    } finally {
-      setSyncing(false)
-    }
-  }
-
-  const filteredWatchlist = fieldFilter === 'all'
-    ? watchlist
-    : watchlist.filter((item) => item.university.fields.includes(fieldFilter))
+  const filteredUniversities = fieldFilter === 'all'
+    ? universities
+    : universities.filter((uni) => uni.fields.includes(fieldFilter))
 
   if (loading) {
     return (
@@ -108,31 +99,14 @@ export default function WatchlistTab({ onToggleWatchlist, onNavigate }: Watchlis
   return (
     <div className="space-y-4 p-4 md:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <Star className="size-5 text-amber-500" />
-            My Watchlist
-          </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {watchlist.length} {watchlist.length === 1 ? 'university' : 'universities'} saved
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSync}
-            disabled={syncing}
-            className="text-xs"
-          >
-            <RefreshCw className={`size-3.5 mr-1 ${syncing ? 'animate-spin' : ''}`} />
-            Sync
-          </Button>
-          <span className="text-xs text-gray-400 dark:text-gray-500">
-            Last sync: {lastSync.toLocaleTimeString()}
-          </span>
-        </div>
+      <div>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+          <Star className="size-5 text-amber-500" />
+          My Watchlist
+        </h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          {universities.length} {universities.length === 1 ? 'university' : 'universities'} saved
+        </p>
       </div>
 
       {/* Field Filter */}
@@ -154,16 +128,16 @@ export default function WatchlistTab({ onToggleWatchlist, onNavigate }: Watchlis
       )}
 
       {/* Watchlist Items */}
-      {filteredWatchlist.length === 0 ? (
+      {filteredUniversities.length === 0 ? (
         <div className="text-center py-12">
           <Star className="size-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">No universities in watchlist</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-            {watchlist.length === 0
+            {universities.length === 0
               ? 'Start adding universities to your watchlist to track their deadlines and details.'
               : 'No universities match the selected field filter.'}
           </p>
-          {watchlist.length === 0 && (
+          {universities.length === 0 && (
             <Button onClick={() => onNavigate('universities')} className="bg-emerald-600 hover:bg-emerald-700 text-white">
               Browse Universities
             </Button>
@@ -171,13 +145,12 @@ export default function WatchlistTab({ onToggleWatchlist, onNavigate }: Watchlis
         </div>
       ) : (
         <div className="space-y-3">
-          {filteredWatchlist.map((item) => {
-            const uni = item.university
+          {filteredUniversities.map((uni) => {
             const fieldsArr = uni.fields.split(',').map((f) => f.trim()).filter(Boolean)
             const scholarships = uni.scholarshipTypes ? uni.scholarshipTypes.split(',').map((s) => s.trim()).filter(Boolean) : []
 
             return (
-              <Card key={item.id} className="hover:shadow-md transition-shadow border-gray-200 dark:border-gray-800">
+              <Card key={uni.id} className="hover:shadow-md transition-shadow border-gray-200 dark:border-gray-800">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0 space-y-2">
@@ -237,12 +210,6 @@ export default function WatchlistTab({ onToggleWatchlist, onNavigate }: Watchlis
                           ))}
                         </div>
                       )}
-
-                      {/* Added date */}
-                      <div className="text-xs text-gray-400 dark:text-gray-500">
-                        Added: {new Date(item.addedAt).toLocaleDateString()}
-                        {item.fieldName && ` · Field: ${item.fieldName}`}
-                      </div>
                     </div>
 
                     {/* Remove Button */}
